@@ -30,7 +30,15 @@ export class Tile {
 			ctx.stroke()
 		}
 		if (this.possibilities.length == 1) {
+			ctx.strokeStyle = "seagreen"
 			this.possibilities[0].draw(ctx, this)
+		} else {
+			ctx.strokeStyle = "rgb(208, 202, 140)"
+			
+			let randomPossibleTile = this.possibilities[Math.floor(Math.random() * this.possibilities.length)]
+			if(randomPossibleTile) {
+				randomPossibleTile.draw(ctx, this)
+			}
 		}
 
 		if (DEBUG) {
@@ -108,7 +116,6 @@ Tile.bounds = { width: 32, height: 32, halfwidth: 16, halfheight: 16, padding: 0
 
 export class NorthToSouth { }
 NorthToSouth.draw = function (ctx, tile) {
-	ctx.strokeStyle = "seagreen"
 	ctx.lineWidth = 4
 	ctx.beginPath()
 	ctx.moveTo(0, -Tile.bounds.halfheight)
@@ -124,7 +131,6 @@ NorthToSouth.valids = {
 
 export class NorthToEast { }
 NorthToEast.draw = function (ctx, tile) {
-	ctx.strokeStyle = "seagreen"
 	ctx.lineWidth = 4
 	ctx.beginPath()
 	ctx.moveTo(0, -Tile.bounds.halfheight)
@@ -141,7 +147,6 @@ NorthToEast.valids = {
 
 export class NorthToWest { }
 NorthToWest.draw = function (ctx, tile) {
-	ctx.strokeStyle = "seagreen"
 	ctx.lineWidth = 4
 	ctx.beginPath()
 	ctx.moveTo(0, -Tile.bounds.halfheight)
@@ -165,7 +170,6 @@ NorthToEastWest.valids = {
 	west: ["open"],
 }
 NorthToEastWest.draw = function (ctx, tile) {
-	ctx.strokeStyle = "seagreen"
 	ctx.lineWidth = 4
 	ctx.beginPath()
 	ctx.moveTo(0, -Tile.bounds.halfheight)
@@ -187,7 +191,6 @@ NorthToSouthEastWest.valids = {
 	west: ["open"],
 }
 NorthToSouthEastWest.draw = function (ctx, tile) {
-	ctx.strokeStyle = "seagreen"
 	ctx.lineWidth = 4
 	ctx.beginPath()
 	ctx.moveTo(0, -Tile.bounds.halfheight)
@@ -207,7 +210,6 @@ SouthToEast.valids = {
 	west: ["close"],
 }
 SouthToEast.draw = function (ctx, tile) {
-	ctx.strokeStyle = "seagreen"
 	ctx.lineWidth = 4
 	ctx.beginPath()
 	ctx.moveTo(0, Tile.bounds.halfheight)
@@ -226,7 +228,6 @@ SouthToWest.valids = {
 }
 
 SouthToWest.draw = function (ctx, tile) {
-	ctx.strokeStyle = "seagreen"
 	ctx.lineWidth = 4
 	ctx.beginPath()
 	ctx.moveTo(0, Tile.bounds.halfheight)
@@ -245,7 +246,6 @@ SouthToEastWest.valids = {
 }
 
 SouthToEastWest.draw = function (ctx, tile) {
-	ctx.strokeStyle = "seagreen"
 	ctx.lineWidth = 4
 	ctx.beginPath()
 	ctx.moveTo(0, Tile.bounds.halfheight)
@@ -268,7 +268,6 @@ EastToWest.valids = {
 }
 
 EastToWest.draw = function (ctx, tile) {
-	ctx.strokeStyle = "seagreen"
 	ctx.lineWidth = 4
 	ctx.beginPath()
 	ctx.moveTo(-Tile.bounds.halfwidth, 0)
@@ -286,7 +285,6 @@ EastToNorthSouth.valids = {
 }
 
 EastToNorthSouth.draw = function (ctx, tile) {
-	ctx.strokeStyle = "seagreen"
 	ctx.lineWidth = 4
 	ctx.beginPath()
 	ctx.moveTo(Tile.bounds.halfwidth, 0)
@@ -309,7 +307,6 @@ WestToNorthSouth.valids = {
 }
 
 WestToNorthSouth.draw = function (ctx, tile) {
-	ctx.strokeStyle = "seagreen"
 	ctx.lineWidth = 4
 	ctx.beginPath()
 	ctx.moveTo(-Tile.bounds.halfwidth, 0)
