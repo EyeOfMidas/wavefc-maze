@@ -1,4 +1,4 @@
-import { Tile } from "./tiles.js"
+import { NorthToWest, Tile } from "./tiles.js"
 
 const tiles = []
 
@@ -17,7 +17,9 @@ document.addEventListener("DOMContentLoaded", () => {
 	ctx.height = canvas.height
 
 	const seed = tiles[45]
-	seed.possibilities = [seed.possibilities[Math.floor(Math.random() * seed.possibilities.length)]]
+	// seed.possibilities = [seed.possibilities[Math.floor(Math.random() * seed.possibilities.length)]]
+	seed.possibilities = [NorthToWest]
+	seed.checkNeighbors(tiles)
 
 	tiles.forEach(tile => {
 		tile.checkNeighbors(tiles)
