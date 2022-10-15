@@ -1,43 +1,48 @@
 
+var DEBUG = false
+
 export class Tile {
 	constructor(position) {
-		this.bounds = { width: 64, height: 64, halfwidth: 32, halfheight: 32 }
 		this.possibilities = [
 			NorthToSouth, NorthToEast, NorthToWest, NorthToEastWest,
 			NorthToSouthEastWest, SouthToEast, SouthToWest, SouthToEastWest,
 			EastToWest, EastToNorthSouth, WestToNorthSouth
 		]
 		this.position = position
-		this.collapsed = null
 	}
 
 	get identity() {
 		return `${this.position.x},${this.position.y}`
 	}
 	get type() {
-		return `${this.possibilities.length == 1 ? "\n" + this.possibilities[0].name : "(" + this.possibilities.length +")"}`
+		return `${this.possibilities.length == 1 ? "\n" + this.possibilities[0].name : "(" + this.possibilities.length + ")"}`
 	}
 
 	draw(ctx) {
 		ctx.strokeStyle = "black"
-		ctx.lineWidth = 4
+		ctx.lineWidth = 1
 		ctx.save()
-		ctx.translate(this.position.x * this.bounds.width, this.position.y * this.bounds.height)
-		
-		ctx.beginPath()
-		ctx.rect(-this.bounds.halfwidth, -this.bounds.halfheight, this.bounds.width, this.bounds.height)
-		ctx.stroke()
-		if (this.collapsed) {
-			this.collapsed.draw(ctx, this)
+		ctx.translate(this.position.x * Tile.bounds.width, this.position.y * Tile.bounds.height)
+
+		if (DEBUG) {
+			ctx.beginPath()
+			ctx.rect(-Tile.bounds.halfwidth, -Tile.bounds.halfheight, Tile.bounds.width, Tile.bounds.height)
+			ctx.stroke()
+		}
+		if (this.possibilities.length == 1) {
+			this.possibilities[0].draw(ctx, this)
 		}
 
-		ctx.textAlign = "center"
-		ctx.fillStyle = "black"
-		ctx.font = "12px Arial"
-		ctx.fillText(this.identity, 0, 0)
+		if (DEBUG) {
+			ctx.textAlign = "center"
+			ctx.fillStyle = "black"
+			ctx.font = "12px Arial"
+			ctx.fillText(this.identity, 0, 0)
 
-		ctx.font = "8px Arial"
-		ctx.fillText(this.type, 0, 12)
+			ctx.font = "8px Arial"
+			ctx.fillText(this.type, 0, 12)
+
+		}
 		ctx.restore()
 	}
 
@@ -48,7 +53,9 @@ export class Tile {
 		if (collapsedTiles.length > 0) {
 			collapsedTiles.forEach((collapsedTile) => {
 				const direction = this.getNeighborDirection(collapsedTile)
-				console.log(`${this.identity} my neighbor to the ${direction} is ${collapsedTile.possibilities[0].name}`)
+				if (DEBUG) {
+					console.log(`${this.identity} my neighbor to the ${direction} is ${collapsedTile.possibilities[0].name}`)
+				}
 
 
 				let filteredPossibilities = this.possibilities.filter(poss => {
@@ -57,20 +64,12 @@ export class Tile {
 					}).length > 0
 				})
 
-				// let filteredPossibilities = this.possibilities.filter((possibility) =>  {
-				// 	return collapsedTile.collapsed.valids[this.invertDirection(direction)].filter(state => {
-				// 		return possibility.valids[direction].includes(state)
-				// 	}).length > 0
-				// })
-				console.log(`after comparing sockets, I have `, filteredPossibilities)
+				if (DEBUG) {
+					console.log(`after comparing sockets, I have `, filteredPossibilities)
+				}
 				this.possibilities = filteredPossibilities
 			})
 		}
-		
-		if (this.possibilities.length == 1) {
-			this.collapsed = this.possibilities[0]
-		}
-
 	}
 
 	invertDirection(direction) {
@@ -99,15 +98,21 @@ export class Tile {
 	isNeighbor(tile) {
 		return this.getNeighborDirection(tile) != null
 	}
+
+	forceCollapse() {
+		this.possibilities = [this.possibilities[Math.floor(Math.random() * this.possibilities.length)]]
+	}
 }
+
+Tile.bounds = { width: 32, height: 32, halfwidth: 16, halfheight: 16, padding: 0 }
 
 export class NorthToSouth { }
 NorthToSouth.draw = function (ctx, tile) {
 	ctx.strokeStyle = "seagreen"
 	ctx.lineWidth = 4
 	ctx.beginPath()
-	ctx.moveTo(0, -tile.bounds.halfheight)
-	ctx.lineTo(0, tile.bounds.halfheight)
+	ctx.moveTo(0, -Tile.bounds.halfheight)
+	ctx.lineTo(0, Tile.bounds.halfheight)
 	ctx.stroke()
 }
 NorthToSouth.valids = {
@@ -122,9 +127,9 @@ NorthToEast.draw = function (ctx, tile) {
 	ctx.strokeStyle = "seagreen"
 	ctx.lineWidth = 4
 	ctx.beginPath()
-	ctx.moveTo(0, -tile.bounds.halfheight)
+	ctx.moveTo(0, -Tile.bounds.halfheight)
 	ctx.lineTo(0, 0)
-	ctx.lineTo(tile.bounds.halfwidth, 0)
+	ctx.lineTo(Tile.bounds.halfwidth, 0)
 	ctx.stroke()
 }
 NorthToEast.valids = {
@@ -139,9 +144,9 @@ NorthToWest.draw = function (ctx, tile) {
 	ctx.strokeStyle = "seagreen"
 	ctx.lineWidth = 4
 	ctx.beginPath()
-	ctx.moveTo(0, -tile.bounds.halfheight)
+	ctx.moveTo(0, -Tile.bounds.halfheight)
 	ctx.lineTo(0, 0)
-	ctx.lineTo(-tile.bounds.halfwidth, 0)
+	ctx.lineTo(-Tile.bounds.halfwidth, 0)
 	ctx.stroke()
 }
 
@@ -163,13 +168,13 @@ NorthToEastWest.draw = function (ctx, tile) {
 	ctx.strokeStyle = "seagreen"
 	ctx.lineWidth = 4
 	ctx.beginPath()
-	ctx.moveTo(0, -tile.bounds.halfheight)
+	ctx.moveTo(0, -Tile.bounds.halfheight)
 	ctx.lineTo(0, 0)
 	ctx.stroke()
 
 	ctx.beginPath()
-	ctx.moveTo(-tile.bounds.halfwidth, 0)
-	ctx.lineTo(tile.bounds.halfwidth, 0)
+	ctx.moveTo(-Tile.bounds.halfwidth, 0)
+	ctx.lineTo(Tile.bounds.halfwidth, 0)
 	ctx.stroke()
 }
 
@@ -185,12 +190,12 @@ NorthToSouthEastWest.draw = function (ctx, tile) {
 	ctx.strokeStyle = "seagreen"
 	ctx.lineWidth = 4
 	ctx.beginPath()
-	ctx.moveTo(0, -tile.bounds.halfheight)
-	ctx.lineTo(0, tile.bounds.halfheight)
+	ctx.moveTo(0, -Tile.bounds.halfheight)
+	ctx.lineTo(0, Tile.bounds.halfheight)
 	ctx.stroke()
 	ctx.beginPath()
-	ctx.moveTo(-tile.bounds.halfwidth, 0)
-	ctx.lineTo(tile.bounds.halfwidth, 0)
+	ctx.moveTo(-Tile.bounds.halfwidth, 0)
+	ctx.lineTo(Tile.bounds.halfwidth, 0)
 	ctx.stroke()
 }
 
@@ -205,9 +210,9 @@ SouthToEast.draw = function (ctx, tile) {
 	ctx.strokeStyle = "seagreen"
 	ctx.lineWidth = 4
 	ctx.beginPath()
-	ctx.moveTo(0, tile.bounds.halfheight)
+	ctx.moveTo(0, Tile.bounds.halfheight)
 	ctx.lineTo(0, 0)
-	ctx.lineTo(tile.bounds.halfwidth, 0)
+	ctx.lineTo(Tile.bounds.halfwidth, 0)
 	ctx.stroke()
 }
 
@@ -224,9 +229,9 @@ SouthToWest.draw = function (ctx, tile) {
 	ctx.strokeStyle = "seagreen"
 	ctx.lineWidth = 4
 	ctx.beginPath()
-	ctx.moveTo(0, tile.bounds.halfheight)
+	ctx.moveTo(0, Tile.bounds.halfheight)
 	ctx.lineTo(0, 0)
-	ctx.lineTo(-tile.bounds.halfwidth, 0)
+	ctx.lineTo(-Tile.bounds.halfwidth, 0)
 	ctx.stroke()
 }
 
@@ -243,13 +248,13 @@ SouthToEastWest.draw = function (ctx, tile) {
 	ctx.strokeStyle = "seagreen"
 	ctx.lineWidth = 4
 	ctx.beginPath()
-	ctx.moveTo(0, tile.bounds.halfheight)
+	ctx.moveTo(0, Tile.bounds.halfheight)
 	ctx.lineTo(0, 0)
 	ctx.stroke()
 
 	ctx.beginPath()
-	ctx.moveTo(-tile.bounds.halfwidth, 0)
-	ctx.lineTo(tile.bounds.halfwidth, 0)
+	ctx.moveTo(-Tile.bounds.halfwidth, 0)
+	ctx.lineTo(Tile.bounds.halfwidth, 0)
 	ctx.stroke()
 }
 
@@ -266,8 +271,8 @@ EastToWest.draw = function (ctx, tile) {
 	ctx.strokeStyle = "seagreen"
 	ctx.lineWidth = 4
 	ctx.beginPath()
-	ctx.moveTo(-tile.bounds.halfwidth, 0)
-	ctx.lineTo(tile.bounds.halfwidth, 0)
+	ctx.moveTo(-Tile.bounds.halfwidth, 0)
+	ctx.lineTo(Tile.bounds.halfwidth, 0)
 	ctx.stroke()
 }
 
@@ -284,13 +289,13 @@ EastToNorthSouth.draw = function (ctx, tile) {
 	ctx.strokeStyle = "seagreen"
 	ctx.lineWidth = 4
 	ctx.beginPath()
-	ctx.moveTo(tile.bounds.halfwidth, 0)
+	ctx.moveTo(Tile.bounds.halfwidth, 0)
 	ctx.lineTo(0, 0)
 	ctx.stroke()
 
 	ctx.beginPath()
-	ctx.moveTo(0, -tile.bounds.halfheight)
-	ctx.lineTo(0, tile.bounds.halfheight)
+	ctx.moveTo(0, -Tile.bounds.halfheight)
+	ctx.lineTo(0, Tile.bounds.halfheight)
 	ctx.stroke()
 }
 
@@ -307,13 +312,13 @@ WestToNorthSouth.draw = function (ctx, tile) {
 	ctx.strokeStyle = "seagreen"
 	ctx.lineWidth = 4
 	ctx.beginPath()
-	ctx.moveTo(-tile.bounds.halfwidth, 0)
+	ctx.moveTo(-Tile.bounds.halfwidth, 0)
 	ctx.lineTo(0, 0)
 	ctx.stroke()
 
 	ctx.beginPath()
-	ctx.moveTo(0, -tile.bounds.halfheight)
-	ctx.lineTo(0, tile.bounds.halfheight)
+	ctx.moveTo(0, -Tile.bounds.halfheight)
+	ctx.lineTo(0, Tile.bounds.halfheight)
 	ctx.stroke()
 }
 

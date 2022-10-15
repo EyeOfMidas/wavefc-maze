@@ -1,48 +1,82 @@
-import { NorthToWest, Tile } from "./tiles.js"
+import { EastToWest, NorthToWest, Tile } from "./tiles.js"
 
 const tiles = []
+let canvas, ctx;
 
 document.addEventListener("DOMContentLoaded", () => {
-	for(let y = 0; y < 10; y++) {
-		for(let x = 0; x < 10; x ++) {
-			tiles.push(new Tile({x: x, y: y}))
-		}
-	}
-
-	const canvas = document.getElementsByTagName('canvas')[0]
+	canvas = document.getElementsByTagName('canvas')[0]
 	canvas.width = canvas.clientWidth
 	canvas.height = canvas.clientHeight
-	const ctx = canvas.getContext('2d')
+	ctx = canvas.getContext('2d')
 	ctx.width = canvas.width
 	ctx.height = canvas.height
 
-	const seed = tiles[45]
-	seed.possibilities = [seed.possibilities[Math.floor(Math.random() * seed.possibilities.length)]]
-	seed.checkNeighbors(tiles)
+	const gridMaxHeight = Math.ceil(canvas.height / Tile.bounds.height) -1
+	const gridMaxWidth = Math.ceil(canvas.width / Tile.bounds.width) -1
 
-	let didCollapse = false
-	tiles.forEach(tile => {
-		didCollapse &= tile.checkNeighbors(tiles)
-	})
+	const startingTile = {x: 0, y: 2}
+	const endingTile = {x: gridMaxWidth -1, y: gridMaxHeight - 3}
 
-	draw(ctx)
+	for (let y = 0; y < gridMaxHeight; y++) {
+		for (let x = 0; x < gridMaxWidth; x++) {
+			let newTile = new Tile({ x: x, y: y })
+			tiles.push(newTile)
 
+			if(x == startingTile.x && y == startingTile.y) {
+				newTile.possibilities = [EastToWest]
+				continue
+			}
 
-	if(!didCollapse) {
-		console.log("nothing resolved, picking random")
-		let orderedUncollapsedTiles = tiles.filter(tile => {return tile.possibilities.length != 1}).sort((a, b) => {return a.possibilities.length - b.possibilities.length})
-		let seed = orderedUncollapsedTiles[0]
-		seed.possibilities = [seed.possibilities[Math.floor(Math.random() * seed.possibilities.length)]]
-		seed.checkNeighbors(tiles)
+			if(x == endingTile.x && y == endingTile.y) {
+				newTile.possibilities = [EastToWest]
+				continue
+			}
+			if(x == 0) {
+				newTile.possibilities = newTile.possibilities.filter(poss => !poss.valids["west"].includes("open"))
+			}
 
-		draw(ctx)
+			if(x == gridMaxWidth - 1) {
+				newTile.possibilities = newTile.possibilities.filter(poss => !poss.valids["east"].includes("open"))
+			}
+
+			if(y == 0) {
+				newTile.possibilities = newTile.possibilities.filter(poss => !poss.valids["north"].includes("open"))
+			}
+
+			if(y == gridMaxHeight - 1) {
+				newTile.possibilities = newTile.possibilities.filter(poss => !poss.valids["south"].includes("open"))
+			}
+			
+		}
 	}
+
+	collapseStep(ctx)
 })
 
+function collapseStep(ctx) {
+	if (tiles.filter(tile => tile.possibilities.length > 1).length > 0) {
+		//need to collapse some more
+		let orderedUncollapsedTiles = tiles.filter(tile => { return tile.possibilities.length != 1 }).sort((a, b) => { return a.possibilities.length - b.possibilities.length })
+		orderedUncollapsedTiles[0].forceCollapse()
+
+		tiles.forEach(tile => {
+			tile.checkNeighbors(tiles)
+		})
+		setTimeout(() => {
+			collapseStep(ctx)
+		}, 300)
+	}
+	draw(ctx)
+}
+
+// window.document.addEventListener("click", () => {
+// 	collapseStep(ctx)
+// })
+
 function draw(ctx) {
-	ctx.clearRect(0,0, 644, 644)
+	ctx.clearRect(0, 0, canvas.width, canvas.height)
 	ctx.save()
-	ctx.translate(34,34)
+	ctx.translate(Tile.bounds.halfwidth, Tile.bounds.halfheight)
 
 	tiles.forEach(tile => {
 		tile.draw(ctx)
