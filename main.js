@@ -17,18 +17,30 @@ document.addEventListener("DOMContentLoaded", () => {
 	ctx.height = canvas.height
 
 	const seed = tiles[45]
-	// seed.possibilities = [seed.possibilities[Math.floor(Math.random() * seed.possibilities.length)]]
-	seed.possibilities = [NorthToWest]
+	seed.possibilities = [seed.possibilities[Math.floor(Math.random() * seed.possibilities.length)]]
 	seed.checkNeighbors(tiles)
 
+	let didCollapse = false
 	tiles.forEach(tile => {
-		tile.checkNeighbors(tiles)
+		didCollapse &= tile.checkNeighbors(tiles)
 	})
 
 	draw(ctx)
+
+
+	if(!didCollapse) {
+		console.log("nothing resolved, picking random")
+		let orderedUncollapsedTiles = tiles.filter(tile => {return tile.possibilities.length != 1}).sort((a, b) => {return a.possibilities.length - b.possibilities.length})
+		let seed = orderedUncollapsedTiles[0]
+		seed.possibilities = [seed.possibilities[Math.floor(Math.random() * seed.possibilities.length)]]
+		seed.checkNeighbors(tiles)
+
+		draw(ctx)
+	}
 })
 
 function draw(ctx) {
+	ctx.clearRect(0,0, 644, 644)
 	ctx.save()
 	ctx.translate(34,34)
 
