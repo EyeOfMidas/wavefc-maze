@@ -11,8 +11,10 @@ Array.prototype.shuffle = function() {
   return this;
 }
 
-const tiles = []
+let tiles = []
+let collapseSpeedMs = 0
 let canvas, ctx;
+let collapseTickId, animateTickId
 
 document.addEventListener("DOMContentLoaded", () => {
 	canvas = document.getElementsByTagName('canvas')[0]
@@ -23,12 +25,15 @@ document.addEventListener("DOMContentLoaded", () => {
 	ctx.height = canvas.height
 
 	generateTileGrid()
+	// while (tiles.filter(tile => tile.possibilities.length > 1).length > 0) {
+	// 	fastCollapseStep()
+	// }
 	collapseStep(ctx)
 	animate(ctx)
 })
 
 function generateTileGrid() {
-	tiles.length = 0
+	tiles = []
 	const gridMaxHeight = Math.ceil(canvas.height / Tile.bounds.height) -1
 	const gridMaxWidth = Math.ceil(canvas.width / Tile.bounds.width) -1
 
@@ -69,20 +74,25 @@ function generateTileGrid() {
 	}
 }
 
+function fastCollapseStep() {
+	let uncollapsedTiles = tiles.filter(tile => { return tile.possibilities.length != 1 })
+	let orderedUncollapsedTiles = uncollapsedTiles.sort((a, b) => (2 * Math.random()) - 1).sort((a, b) => { return a.possibilities.length - b.possibilities.length })
+		orderedUncollapsedTiles[0].forceCollapse()
+
+		uncollapsedTiles.forEach(tile => {
+			tile.checkNeighbors(tiles)
+		})
+}
+
 function collapseStep(ctx) {
 	if (tiles.filter(tile => tile.possibilities.length > 1).length == 0) {
 		return
 	}
 		//need to collapse some more
-		let orderedUncollapsedTiles = tiles.filter(tile => { return tile.possibilities.length != 1 }).sort((a, b) => (2 * Math.random()) - 1).sort((a, b) => { return a.possibilities.length - b.possibilities.length })
-		orderedUncollapsedTiles[0].forceCollapse()
-
-		tiles.forEach(tile => {
-			tile.checkNeighbors(tiles)
-		})
-		setTimeout(() => {
+		fastCollapseStep()
+		collapseTickId = setTimeout(() => {
 			collapseStep(ctx)
-		}, 100)
+		}, collapseSpeedMs)
 	}
 
 function animate(ctx) {
@@ -90,15 +100,19 @@ function animate(ctx) {
 	if (tiles.filter(tile => tile.possibilities.length > 1).length == 0) {
 		return
 	}
-	requestAnimationFrame(() => {animate(ctx) })
+	animateTickId = requestAnimationFrame(() => {animate(ctx) })
 }
 
 window.document.addEventListener("click", () => {
-	console.log("regenerating tile grid")
 	generateTileGrid()
+	cancelAnimationFrame(animateTickId)
+	clearTimeout(collapseTickId)
+	collapseStep(ctx)
+	animate(ctx)
 })
 
 function draw(ctx) {
+	ctx.setTransform(1, 0, 0, 1, 0, 0);
 	ctx.clearRect(0, 0, canvas.width, canvas.height)
 	ctx.save()
 	ctx.translate(Tile.bounds.halfwidth, Tile.bounds.halfheight)

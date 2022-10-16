@@ -34,9 +34,9 @@ export class Tile {
 			this.possibilities[0].draw(ctx, this)
 		} else {
 			ctx.strokeStyle = "rgb(208, 202, 140)"
-			
+
 			let randomPossibleTile = this.possibilities[Math.floor(Math.random() * this.possibilities.length)]
-			if(randomPossibleTile) {
+			if (randomPossibleTile) {
 				randomPossibleTile.draw(ctx, this)
 			}
 		}
@@ -58,26 +58,35 @@ export class Tile {
 
 		let neighbors = tiles.filter((tile) => this.isNeighbor(tile))
 		let collapsedTiles = neighbors.filter((tile) => tile.possibilities.length == 1)
-		if (collapsedTiles.length > 0) {
-			collapsedTiles.forEach((collapsedTile) => {
-				const direction = this.getNeighborDirection(collapsedTile)
-				if (DEBUG) {
-					console.log(`${this.identity} my neighbor to the ${direction} is ${collapsedTile.possibilities[0].name}`)
-				}
-
-
-				let filteredPossibilities = this.possibilities.filter(poss => {
-					return poss.valids[direction].filter(state => {
-						return collapsedTile.possibilities[0].valids[this.invertDirection(direction)].includes(state)
-					}).length > 0
-				})
-
-				if (DEBUG) {
-					console.log(`after comparing sockets, I have `, filteredPossibilities)
-				}
-				this.possibilities = filteredPossibilities
-			})
+		if (collapsedTiles.length == 0) {
+			return
 		}
+		let remainingPossibilities = this.possibilities.filter(() => true)
+		for(let i = 0; i < collapsedTiles.length; i++) {
+			let collapsedTile = collapsedTiles[i]
+			const direction = this.getNeighborDirection(collapsedTile)
+			if (DEBUG) {
+				console.log(`${this.identity} my neighbor to the ${direction} is ${collapsedTile.possibilities[0].name}`)
+			}
+
+			let possibility = collapsedTile.possibilities[0]
+			if (!possibility) {
+				return false
+			}
+
+			let filteredPossibilities = remainingPossibilities.filter(poss => {
+				let sockets = poss.valids[direction]
+				return sockets.filter(state => {
+					return possibility.valids[this.invertDirection(direction)].includes(state)
+				}).length > 0
+			})
+
+			if (DEBUG) {
+				console.log(`after comparing sockets, I have `, filteredPossibilities)
+			}
+			remainingPossibilities = filteredPossibilities
+		}
+		this.possibilities = remainingPossibilities
 	}
 
 	invertDirection(direction) {
