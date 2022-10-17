@@ -1,6 +1,6 @@
 
 var DEBUG = false
-var DEBUG_DISPLAY = true
+var DEBUG_DISPLAY = false
 
 export class Tile {
 	constructor(position) {

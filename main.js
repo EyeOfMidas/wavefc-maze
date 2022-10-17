@@ -34,8 +34,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function generateTileGrid() {
 	tiles = []
-	const gridMaxHeight = Math.ceil(canvas.height / Tile.bounds.height) -1
-	const gridMaxWidth = Math.ceil(canvas.width / Tile.bounds.width) -1
+	const gridMaxHeight = Math.min(30, Math.ceil(canvas.height / Tile.bounds.height) -1)
+	const gridMaxWidth = Math.min(26, Math.ceil(canvas.width / Tile.bounds.width) -1)
 
 	const startingTile = {x: 0, y: 2}
 	const endingTile = {x: gridMaxWidth -1, y: gridMaxHeight-3}
