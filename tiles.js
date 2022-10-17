@@ -119,12 +119,16 @@ export class Tile {
 	forceCollapse() {
 		this.possibilities = [this.possibilities[Math.floor(Math.random() * this.possibilities.length)]]
 	}
+
+	filterFrom(direction, state) {
+		this.possibilities = this.possibilities.filter(poss => !poss.valids[direction].includes(state))
+	}
 }
 
 Tile.bounds = { width: 32, height: 32, halfwidth: 16, halfheight: 16, padding: 0 }
 
 export class NorthToSouth { }
-NorthToSouth.draw = function (ctx, tile) {
+NorthToSouth.draw = function (ctx) {
 	ctx.lineWidth = 4
 	ctx.beginPath()
 	ctx.moveTo(0, -Tile.bounds.halfheight)
@@ -139,7 +143,7 @@ NorthToSouth.valids = {
 }
 
 export class NorthToEast { }
-NorthToEast.draw = function (ctx, tile) {
+NorthToEast.draw = function (ctx) {
 	ctx.lineWidth = 4
 	ctx.beginPath()
 	ctx.moveTo(0, -Tile.bounds.halfheight)
@@ -155,7 +159,7 @@ NorthToEast.valids = {
 }
 
 export class NorthToWest { }
-NorthToWest.draw = function (ctx, tile) {
+NorthToWest.draw = function (ctx) {
 	ctx.lineWidth = 4
 	ctx.beginPath()
 	ctx.moveTo(0, -Tile.bounds.halfheight)
@@ -178,7 +182,7 @@ NorthToEastWest.valids = {
 	east: ["open"],
 	west: ["open"],
 }
-NorthToEastWest.draw = function (ctx, tile) {
+NorthToEastWest.draw = function (ctx) {
 	ctx.lineWidth = 4
 	ctx.beginPath()
 	ctx.moveTo(0, -Tile.bounds.halfheight)
@@ -199,7 +203,7 @@ NorthToSouthEastWest.valids = {
 	east: ["open"],
 	west: ["open"],
 }
-NorthToSouthEastWest.draw = function (ctx, tile) {
+NorthToSouthEastWest.draw = function (ctx) {
 	ctx.lineWidth = 4
 	ctx.beginPath()
 	ctx.moveTo(0, -Tile.bounds.halfheight)
@@ -218,7 +222,7 @@ SouthToEast.valids = {
 	east: ["open"],
 	west: ["close"],
 }
-SouthToEast.draw = function (ctx, tile) {
+SouthToEast.draw = function (ctx) {
 	ctx.lineWidth = 4
 	ctx.beginPath()
 	ctx.moveTo(0, Tile.bounds.halfheight)
@@ -236,7 +240,7 @@ SouthToWest.valids = {
 	west: ["open"],
 }
 
-SouthToWest.draw = function (ctx, tile) {
+SouthToWest.draw = function (ctx) {
 	ctx.lineWidth = 4
 	ctx.beginPath()
 	ctx.moveTo(0, Tile.bounds.halfheight)
@@ -254,7 +258,7 @@ SouthToEastWest.valids = {
 	west: ["open"],
 }
 
-SouthToEastWest.draw = function (ctx, tile) {
+SouthToEastWest.draw = function (ctx) {
 	ctx.lineWidth = 4
 	ctx.beginPath()
 	ctx.moveTo(0, Tile.bounds.halfheight)
@@ -276,7 +280,7 @@ EastToWest.valids = {
 	west: ["open"],
 }
 
-EastToWest.draw = function (ctx, tile) {
+EastToWest.draw = function (ctx) {
 	ctx.lineWidth = 4
 	ctx.beginPath()
 	ctx.moveTo(-Tile.bounds.halfwidth, 0)
@@ -293,7 +297,7 @@ EastToNorthSouth.valids = {
 	west: ["close"],
 }
 
-EastToNorthSouth.draw = function (ctx, tile) {
+EastToNorthSouth.draw = function (ctx) {
 	ctx.lineWidth = 4
 	ctx.beginPath()
 	ctx.moveTo(Tile.bounds.halfwidth, 0)
@@ -315,7 +319,7 @@ WestToNorthSouth.valids = {
 	west: ["open"],
 }
 
-WestToNorthSouth.draw = function (ctx, tile) {
+WestToNorthSouth.draw = function (ctx) {
 	ctx.lineWidth = 4
 	ctx.beginPath()
 	ctx.moveTo(-Tile.bounds.halfwidth, 0)

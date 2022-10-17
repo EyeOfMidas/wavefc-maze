@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	// while (tiles.filter(tile => tile.possibilities.length > 1).length > 0) {
 	// 	fastCollapseStep()
 	// }
-	collapseStep(ctx)
+	collapseStep()
 	animate(ctx)
 })
 
@@ -55,19 +55,19 @@ function generateTileGrid() {
 				continue
 			}
 			if(x == 0) {
-				newTile.possibilities = newTile.possibilities.filter(poss => !poss.valids["west"].includes("open"))
+				newTile.filterFrom("west", "open")
 			}
 
 			if(x == gridMaxWidth - 1) {
-				newTile.possibilities = newTile.possibilities.filter(poss => !poss.valids["east"].includes("open"))
+				newTile.filterFrom("east", "open")
 			}
 
 			if(y == 0) {
-				newTile.possibilities = newTile.possibilities.filter(poss => !poss.valids["north"].includes("open"))
+				newTile.filterFrom("north", "open")
 			}
 
 			if(y == gridMaxHeight - 1) {
-				newTile.possibilities = newTile.possibilities.filter(poss => !poss.valids["south"].includes("open"))
+				newTile.filterFrom("south", "open")
 			}
 			
 		}
@@ -84,30 +84,30 @@ function fastCollapseStep() {
 		})
 }
 
-function collapseStep(ctx) {
+function collapseStep() {
 	if (tiles.filter(tile => tile.possibilities.length > 1).length == 0) {
 		return
 	}
 		//need to collapse some more
 		fastCollapseStep()
 		collapseTickId = setTimeout(() => {
-			collapseStep(ctx)
+			collapseStep()
 		}, collapseSpeedMs)
 	}
 
-function animate(ctx) {
+function animate() {
 	draw(ctx)
 	if (tiles.filter(tile => tile.possibilities.length > 1).length == 0) {
 		return
 	}
-	animateTickId = requestAnimationFrame(() => {animate(ctx) })
+	animateTickId = requestAnimationFrame(animate)
 }
 
 window.document.addEventListener("click", () => {
-	generateTileGrid()
 	cancelAnimationFrame(animateTickId)
 	clearTimeout(collapseTickId)
-	collapseStep(ctx)
+	generateTileGrid()
+	collapseStep()
 	animate(ctx)
 })
 
