@@ -1,12 +1,14 @@
 
 var DEBUG = false
+var DEBUG_DISPLAY = true
 
 export class Tile {
 	constructor(position) {
 		this.possibilities = [
-			NorthToSouth, NorthToEast, NorthToWest, NorthToEastWest,
-			NorthToSouthEastWest, SouthToEast, SouthToWest, SouthToEastWest,
-			EastToWest, EastToNorthSouth, WestToNorthSouth
+			NorthToSouth, NorthToEast, NorthToWest, NorthToEastWest, NorthToSouthEastWest, NorthDeadEnd,
+			SouthToEast, SouthToWest, SouthToEastWest, SouthDeadEnd,
+			EastToWest, EastToNorthSouth, EastDeadEnd,
+			WestToNorthSouth, WestDeadEnd,
 		]
 		this.position = position
 	}
@@ -41,14 +43,14 @@ export class Tile {
 			}
 		}
 
-		if (DEBUG) {
+		if (DEBUG_DISPLAY) {
 			ctx.textAlign = "center"
 			ctx.fillStyle = "black"
 			ctx.font = "12px Arial"
 			ctx.fillText(this.identity, 0, 0)
 
-			ctx.font = "8px Arial"
-			ctx.fillText(this.type, 0, 12)
+			// ctx.font = "8px Arial"
+			// ctx.fillText(this.type, 0, 12)
 
 		}
 		ctx.restore()
@@ -59,7 +61,7 @@ export class Tile {
 		let neighbors = tiles.filter((tile) => this.isNeighbor(tile))
 		let collapsedTiles = neighbors.filter((tile) => tile.possibilities.length == 1)
 		if (collapsedTiles.length == 0) {
-			return
+			return false
 		}
 		let remainingPossibilities = this.possibilities
 		for (let i = 0; i < collapsedTiles.length; i++) {
@@ -89,6 +91,10 @@ export class Tile {
 				console.log(`after comparing sockets, I have `, filteredPossibilities)
 			}
 			remainingPossibilities = filteredPossibilities
+		}
+		if(remainingPossibilities.length == 0) {
+			console.warn("collapse put me into an impossible state", this.possibilities, neighbors)
+			return false
 		}
 		this.possibilities = remainingPossibilities
 	}
@@ -120,12 +126,13 @@ export class Tile {
 		return this.getNeighborDirection(tile) != null
 	}
 
-	forceCollapse() {
-		let randomIndex = Math.floor(Math.random() * this.possibilities.length)
+	forceCollapse(impossibleToForce = [NorthDeadEnd, SouthDeadEnd, EastDeadEnd, WestDeadEnd]) {
+		let validPossibilitiesToCollapseTo = this.possibilities.filter((poss) => { return !impossibleToForce.includes(poss) })
+		let randomIndex = Math.floor(Math.random() * validPossibilitiesToCollapseTo.length)
 		if (DEBUG) {
-			console.log(`forcing collapse of ${this.identity}`, randomIndex, this.possibilities)
+			console.log(`forcing collapse of ${this.identity}`, randomIndex, validPossibilitiesToCollapseTo)
 		}
-		this.possibilities = this.possibilities.filter((poss, index) => {
+		this.possibilities = validPossibilitiesToCollapseTo.filter((poss) => { return !impossibleToForce.includes(poss) }).filter((poss, index) => {
 			return index == randomIndex
 		})
 		if (DEBUG) {
@@ -231,6 +238,25 @@ NorthToSouthEastWest.draw = function (ctx) {
 	ctx.stroke()
 }
 
+export class NorthDeadEnd { }
+NorthDeadEnd.valids = {
+	north: ["open"],
+	south: ["close"],
+	east: ["close"],
+	west: ["close"],
+}
+NorthDeadEnd.draw = function (ctx) {
+	ctx.lineWidth = 4
+	ctx.beginPath()
+	ctx.moveTo(0, -Tile.bounds.halfheight)
+	ctx.lineTo(0, 0)
+	ctx.stroke()
+
+	ctx.beginPath()
+	ctx.arc(0,0, 4, 0, 2 * Math.PI)
+	ctx.stroke()
+}
+
 export class SouthToEast { }
 SouthToEast.valids = {
 	north: ["close"],
@@ -287,6 +313,24 @@ SouthToEastWest.draw = function (ctx) {
 	ctx.stroke()
 }
 
+export class SouthDeadEnd { }
+SouthDeadEnd.valids = {
+	north: ["close"],
+	south: ["open"],
+	east: ["close"],
+	west: ["close"],
+}
+SouthDeadEnd.draw = function (ctx) {
+	ctx.lineWidth = 4
+	ctx.beginPath()
+	ctx.moveTo(0, Tile.bounds.halfheight)
+	ctx.lineTo(0, 0)
+	ctx.stroke()
+
+	ctx.beginPath()
+	ctx.arc(0,0, 4, 0, 2 * Math.PI)
+	ctx.stroke()
+}
 
 export class EastToWest { }
 EastToWest.valids = {
@@ -326,6 +370,25 @@ EastToNorthSouth.draw = function (ctx) {
 	ctx.stroke()
 }
 
+export class EastDeadEnd { }
+EastDeadEnd.valids = {
+	north: ["close"],
+	south: ["close"],
+	east: ["open"],
+	west: ["close"],
+}
+EastDeadEnd.draw = function (ctx) {
+	ctx.lineWidth = 4
+	ctx.beginPath()
+	ctx.moveTo(Tile.bounds.halfwidth, 0)
+	ctx.lineTo(0, 0)
+	ctx.stroke()
+
+	ctx.beginPath()
+	ctx.arc(0,0, 4, 0, 2 * Math.PI)
+	ctx.stroke()
+}
+
 
 export class WestToNorthSouth { }
 WestToNorthSouth.valids = {
@@ -345,6 +408,25 @@ WestToNorthSouth.draw = function (ctx) {
 	ctx.beginPath()
 	ctx.moveTo(0, -Tile.bounds.halfheight)
 	ctx.lineTo(0, Tile.bounds.halfheight)
+	ctx.stroke()
+}
+
+export class WestDeadEnd { }
+WestDeadEnd.valids = {
+	north: ["close"],
+	south: ["close"],
+	east: ["close"],
+	west: ["open"],
+}
+WestDeadEnd.draw = function (ctx) {
+	ctx.lineWidth = 4
+	ctx.beginPath()
+	ctx.moveTo(-Tile.bounds.halfwidth, 0)
+	ctx.lineTo(0, 0)
+	ctx.stroke()
+
+	ctx.beginPath()
+	ctx.arc(0,0, 4, 0, 2 * Math.PI)
 	ctx.stroke()
 }
 
