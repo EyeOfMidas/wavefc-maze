@@ -55,14 +55,14 @@ export class Tile {
 	}
 
 	checkNeighbors(tiles) {
-
+		// console.log(`checking neighbors of ${this.identity}`)
 		let neighbors = tiles.filter((tile) => this.isNeighbor(tile))
 		let collapsedTiles = neighbors.filter((tile) => tile.possibilities.length == 1)
 		if (collapsedTiles.length == 0) {
 			return
 		}
-		let remainingPossibilities = this.possibilities.filter(() => true)
-		for(let i = 0; i < collapsedTiles.length; i++) {
+		let remainingPossibilities = this.possibilities
+		for (let i = 0; i < collapsedTiles.length; i++) {
 			let collapsedTile = collapsedTiles[i]
 			const direction = this.getNeighborDirection(collapsedTile)
 			if (DEBUG) {
@@ -75,6 +75,10 @@ export class Tile {
 			}
 
 			let filteredPossibilities = remainingPossibilities.filter(poss => {
+				if (!poss) {
+					console.warn(`a possibility went missing in ${this.identity}`, poss)
+					return false
+				}
 				let sockets = poss.valids[direction]
 				return sockets.filter(state => {
 					return possibility.valids[this.invertDirection(direction)].includes(state)
@@ -117,10 +121,22 @@ export class Tile {
 	}
 
 	forceCollapse() {
-		this.possibilities = [this.possibilities[Math.floor(Math.random() * this.possibilities.length)]]
+		let randomIndex = Math.floor(Math.random() * this.possibilities.length)
+		if (DEBUG) {
+			console.log(`forcing collapse of ${this.identity}`, randomIndex, this.possibilities)
+		}
+		this.possibilities = this.possibilities.filter((poss, index) => {
+			return index == randomIndex
+		})
+		if (DEBUG) {
+			console.log(`remaining state`, this.possibilities)
+		}
 	}
 
 	filterFrom(direction, state) {
+		if (DEBUG) {
+			console.log(`filtering out ${direction}[${state}] of ${this.identity}`)
+		}
 		this.possibilities = this.possibilities.filter(poss => !poss.valids[direction].includes(state))
 	}
 }

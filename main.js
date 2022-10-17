@@ -38,7 +38,7 @@ function generateTileGrid() {
 	const gridMaxWidth = Math.ceil(canvas.width / Tile.bounds.width) -1
 
 	const startingTile = {x: 0, y: 2}
-	const endingTile = {x: gridMaxWidth -1, y: gridMaxHeight - 3}
+	const endingTile = {x: gridMaxWidth -1, y: gridMaxHeight-3}
 
 	for (let y = 0; y < gridMaxHeight; y++) {
 		for (let x = 0; x < gridMaxWidth; x++) {
@@ -75,7 +75,7 @@ function generateTileGrid() {
 }
 
 function fastCollapseStep() {
-	let uncollapsedTiles = tiles.filter(tile => { return tile.possibilities.length != 1 })
+	let uncollapsedTiles = tiles.filter(tile => tile.possibilities.length > 1)
 	let orderedUncollapsedTiles = uncollapsedTiles.sort((a, b) => (2 * Math.random()) - 1).sort((a, b) => { return a.possibilities.length - b.possibilities.length })
 		orderedUncollapsedTiles[0].forceCollapse()
 
